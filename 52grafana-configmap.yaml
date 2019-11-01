@@ -1,0 +1,167 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-ini
+  labels:
+    app.kubernetes.io/name: k8s-monitoring
+    app.kubernetes.io/component: grafana
+data:
+  # Grafana's main configuration file. To learn more about the configuration options available to you, 
+  # consult https://grafana.com/docs/installation/configuration
+  grafana.ini: |-
+    #################################### Paths ####################################
+    [paths]
+    # Path to where grafana can store temp files, sessions, and the sqlite3 db (if that is used)
+    ;data = /var/lib/grafana
+
+    # Temporary files in `data` directory older than given duration will be removed
+    temp_data_lifetime = 240h
+
+    # Directory where grafana can store logs
+    ;logs = /var/log/grafana
+
+    # Directory where grafana will automatically scan and look for plugins
+    ;plugins = /var/lib/grafana/plugins
+
+    # folder that contains provisioning config files that grafana will apply on startup and while running.
+    ;provisioning = conf/provisioning
+    #################################### Server ####################################
+    [server]
+    # Protocol (http, https, socket)
+    ;protocol = http
+
+    # The ip address to bind to, empty will bind to all interfaces
+    ;http_addr =
+
+    # The http port  to use
+    ;http_port = 3000
+
+    # The public facing domain name used to access grafana from a browser
+    domain = subdomain.domain.com
+
+    # Redirect to correct domain if host header does not match domain
+    # Prevents DNS rebinding attacks
+    # ;enforce_domain = false
+    enforce_domain = true
+
+    # The full public facing url you use in browser, used for redirects and emails
+    # If you use reverse proxy and sub path specify full url (with sub path)
+    root_url = https://subdomain.domain.com
+
+    # Log web requests
+    ;router_logging = false
+
+    # the path relative working path
+    ;static_root_path = public
+
+    # enable gzip
+    enable_gzip = true
+
+    # https certs & key file
+    ;cert_file =
+    ;cert_key =
+
+    # Unix socket path
+    ;socket =
+    #################################### SMTP / Emailing ##########################
+    [smtp]
+    enabled = true
+    host = smtp.yandex.com:465
+    user = alert@my-mail.com
+    # If the password contains # or ; you have to wrap it with trippel quotes. Ex """#password;"""
+    password = PASSWORD
+    ;cert_file =
+    ;key_file =
+    ;skip_verify = false
+    from_address = alert@my-mail.com
+    from_name = k8s cluster alert
+    # EHLO identity in SMTP dialog (defaults to instance_name)
+    ehlo_identity = ehlo.example.com
+
+    [emails]
+    ;welcome_email_on_sign_up = false
+
+    #################################### Logging ##########################
+    [log]
+    # Either "console", "file", "syslog". Default is console and  file
+    # Use space to separate multiple modes, e.g. "console file"
+    # ;mode = console file
+    mode = console
+
+    # Either "debug", "info", "warn", "error", "critical", default is "info"
+    level = warn
+
+    # optional settings to set different levels for specific loggers. Ex filters = sqlstore:debug
+    ;filters =
+    #################################### External image storage ##########################
+    [external_image_storage]
+    # Used for uploading images to public servers so they can be included in slack/email messages.
+    # you can choose between (s3, webdav, gcs, azure_blob, local)
+    provider = local
+
+    [external_image_storage.s3]
+    bucket = 
+    region = ''
+    ;path =
+    access_key =
+    secret_key =
+
+    [external_image_storage.webdav]
+    ;url =
+    ;public_url =
+    ;username =
+    ;password =
+
+    ######### default k8s values ###########
+    # [analytics]
+    # check_for_updates = true
+    # [grafana_net]
+    # url = https://grafana.net
+    # [log]
+    # mode = console
+    # [paths]
+    # data = /var/lib/grafana/data
+    # logs = /var/log/grafana
+    # plugins = /var/lib/grafana/plugins
+
+# ---
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: $APP_INSTANCE_NAME-grafana-datasources
+#   labels:
+#     app.kubernetes.io/name: $APP_INSTANCE_NAME
+# data:
+#   # A file that specifies data sources for Grafana to use to populate dashboards. 
+#   # To learn more about configuring this, consult https://grafana.com/docs/administration/provisioning/#datasources
+#   datasources.yaml: |
+#     apiVersion: 1
+#     datasources:
+#     - access: proxy
+#       isDefault: true
+#       name: prometheus
+#       type: prometheus
+#       url: http://$APP_INSTANCE_NAME-prometheus:9090
+#       version: 1
+# ---
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: $APP_INSTANCE_NAME-grafana-dashboardproviders
+#   labels:
+#     app.kubernetes.io/name: $APP_INSTANCE_NAME
+# data:
+#   # A file that configures where Grafana should look for dashboards to load when starting up. 
+#   # To learn more, consult https://grafana.com/docs/administration/provisioning/#dashboards
+#   # By default, the `dashboards-configmap.yaml` ConfigMap will be mounted to `/var/lib/grafana/dashboards` which is referenced in this file.
+#   dashboardproviders.yaml: |
+#     apiVersion: 1
+#     providers:
+#     - disableDeletion: false
+#       editable: true
+#       folder: ""
+#       name: default
+#       options:
+#         path: /var/lib/grafana/dashboards
+#       orgId: 1
+#       type: file
